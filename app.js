@@ -143,7 +143,7 @@
     $("#site-header").innerHTML = `
       <div class="container nav">
         <a class="brand" href="#home" aria-label="Soulora home">
-          <img src="assets/logo-mark.jpg" alt="">
+          <img src="logo-mark.jpg" alt="">
           <span class="brand-text"><span class="brand-name">SOULORA</span><span class="brand-sub">Healing &amp; Wellness Collective</span></span>
         </a>
         <ul class="nav-links" id="nav-links">
@@ -174,10 +174,49 @@
         <div class="footer-bottom"><span>© ${new Date().getFullYear()} Soulora Healing &amp; Wellness Collective</span><span>AWAKEN • ALIGN • HEAL</span></div>
       </div>`;
 
-    const toggle = $("#menu-toggle"), links = $("#nav-links");
-    toggle.addEventListener("click", () => { const o = links.classList.toggle("open"); toggle.setAttribute("aria-expanded", o); });
+    /* ---- Mobile menu panel (full-screen, services always visible) ---- */
+    const mnav = document.createElement("div");
+    mnav.className = "mnav"; mnav.id = "mnav"; mnav.setAttribute("aria-hidden", "true");
+    mnav.innerHTML = `
+      <div class="mnav-panel" role="dialog" aria-label="Menu">
+        <div class="mnav-label">Book a service</div>
+        <div class="mnav-services">${Object.values(SERVICES).map((s) => `
+          <a href="#${s.id}" data-nav="${s.id}" class="mnav-svc"><span class="service-icon">${SERVICE_ICONS[s.id]}</span><span><strong>${esc(s.name)}</strong><small>${esc(s.chips[0])} · ${esc(s.chips[1])}</small></span><span class="mnav-arrow">›</span></a>`).join("")}
+        </div>
+        <div class="mnav-label">Soulora</div>
+        <div class="mnav-links">
+          <a href="#home" data-nav="home">Home</a>
+          <a href="#about" data-nav="about">About Us</a>
+          <a href="#contact" data-nav="contact">Contact Us</a>
+          <a href="#feedback" data-nav="feedback">Comments &amp; Feedback</a>
+        </div>
+        <div class="mnav-foot">${esc(CFG.email)}<br>${esc(CFG.phone)}</div>
+      </div>`;
+    document.body.appendChild(mnav);
+
+    /* ---- Bottom tab bar (phones) ---- */
+    const tab = document.createElement("nav");
+    tab.className = "tabbar"; tab.setAttribute("aria-label", "Quick navigation");
+    const ti = (d) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
+    tab.innerHTML = `
+      <a href="#home" data-tab="home">${ti('<path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-5h4v5"/>')}<span>Home</span></a>
+      <button type="button" data-tab="services" data-openmenu>${ti('<rect x="4" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5"/>')}<span>Services</span></button>
+      <a href="#reiki" data-tab="book" class="tab-book"><span class="tab-book-ico">${ti('<rect x="3" y="4.5" width="18" height="16" rx="3"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/>')}</span><span>Book</span></a>
+      <a href="#contact" data-tab="contact">${ti('<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/>')}<span>Contact</span></a>
+      <a href="#feedback" data-tab="feedback">${ti('<path d="M4 5h16v11H9l-5 4V5Z"/><path d="M8 9.5h8M8 12.5h5"/>')}<span>Feedback</span></a>`;
+    document.body.appendChild(tab);
+
+    const toggle = $("#menu-toggle");
+    toggle.addEventListener("click", () => setMenu(!document.body.classList.contains("menu-open")));
+    $("[data-openmenu]", tab).addEventListener("click", () => setMenu(!document.body.classList.contains("menu-open")));
+    mnav.addEventListener("click", (e) => { if (e.target === mnav || e.target.closest("a")) setMenu(false); });
     $(".nav-trigger").addEventListener("click", (e) => e.currentTarget.parentElement.classList.toggle("open"));
-    links.addEventListener("click", (e) => { if (e.target.closest("a")) { links.classList.remove("open"); $(".has-sub").classList.remove("open"); } });
+  }
+
+  function setMenu(open) {
+    document.body.classList.toggle("menu-open", open);
+    const t = $("#menu-toggle"); if (t) { t.setAttribute("aria-expanded", open); t.setAttribute("aria-label", open ? "Close menu" : "Open menu"); }
+    const m = $("#mnav"); if (m) m.setAttribute("aria-hidden", !open);
   }
 
   const divider = `<div class="divider">${ICON.lotus}</div>`;
@@ -209,7 +248,7 @@
           </div>
           <div class="pillars"><span>Awaken</span><span>Align</span><span>Heal</span></div>
         </div>
-        <div class="hero-art"><img src="assets/logo-mark.jpg" alt="Soulora lotus emblem"></div>
+        <div class="hero-art"><img src="logo-mark.jpg" alt="Soulora lotus emblem"></div>
       </div>
     </section>
 
@@ -333,9 +372,11 @@
         <div class="info-strip">${svc.chips.map((c, i) => `<span class="chip ${i === 0 ? "gold" : ""}">${esc(c)}</span>`).join("")}</div>
       </div>
     </section>
-    <section>
+    <nav class="svc-switch" aria-label="Switch service"><div class="container">${Object.values(SERVICES).map((s) => `<a href="#${s.id}" class="${s.id === id ? "on" : ""}">${esc(s.name)}</a>`).join("")}</div></nav>
+    <section class="svc-section">
       <div class="container">
         ${extra}
+        <p class="tap-hint">Tap a ${id === "tarot" ? "reader" : id === "mentorship" ? "mentor" : id === "quantum" ? "practitioner" : "healer"} to see their calendar, same-day slots and how to pay.</p>
         <div class="practitioners">${svc.practitioners.map((p) => practitionerCard(svc, p)).join("")}</div>
       </div>
     </section>
@@ -371,7 +412,7 @@
     <section class="page-banner"><div class="container"><span class="eyebrow">About Us</span><h1>A sanctuary for the soul</h1><p>${esc(CFG.tagline)}</p></div></section>
     <section>
       <div class="container about-grid">
-        <div class="about-logo"><img src="assets/logo-full.jpg" alt="Soulora Healing & Wellness Collective logo"></div>
+        <div class="about-logo"><img src="logo-full.jpg" alt="Soulora Healing & Wellness Collective logo"></div>
         <div>
           <span class="eyebrow">Our Story</span>
           <h2>Where the soul finds its light</h2>
@@ -482,14 +523,20 @@
   const ROUTES = { home: pageHome, about: pageAbout, contact: pageContact, feedback: pageFeedback };
   function route() {
     if ($("#modal").classList.contains("show")) closeBooking();
+    setMenu(false);
+    $$(".has-sub.open").forEach((x) => x.classList.remove("open"));
     const key = (location.hash || "#home").slice(1) || "home";
     const isSvc = !!SERVICES[key];
     const view = isSvc ? pageService(key) : (ROUTES[key] || pageHome)();
     app.innerHTML = `<div class="view">${view}</div>`;
     $$("[data-nav]").forEach((a) => a.classList.toggle("active", a.dataset.nav === key));
+    const tabKey = isSvc ? "services" : ROUTES[key] ? key : "home";
+    $$("[data-tab]").forEach((a) => a.classList.toggle("active", a.dataset.tab === tabKey));
     document.title = (isSvc ? SERVICES[key].name : key === "home" || !ROUTES[key] ? "Where the soul finds its light" : $("h1", app).textContent) + " · Soulora";
     window.scrollTo({ top: 0, behavior: "instant" in window ? "instant" : "auto" });
     if (key === "feedback") renderFeedbackWall();
+    const on = $(".svc-switch a.on");
+    if (on) { const c = on.parentElement; c.scrollLeft = on.offsetLeft - (c.clientWidth - on.offsetWidth) / 2; }
   }
 
   /* ==========================================================================
@@ -528,7 +575,7 @@
   }
 
   function stepper() {
-    const labels = ["Date & Time", "Your Details", "Payment", "Done"];
+    const labels = ["Schedule", "Details", "Payment", "Done"];
     return `<div class="stepper">${labels.map((l, i) => `<div class="${i < B.step ? "on" : ""}">${i + 1}. ${l}</div>`).join("")}</div>`;
   }
 
@@ -745,7 +792,12 @@
     if (!B.file) { $("#dropzone").closest(".field").classList.add("error"); ok = false; }
     $("#agree-err").style.display = agree.checked ? "none" : "block";
     if (!agree.checked) ok = false;
-    if (!ok) return;
+    if (!ok) {
+      const firstErr = !B.file ? $("#dropzone") : agree;
+      firstErr.scrollIntoView({ behavior: "smooth", block: "center" });
+      toast(!B.file ? "Please upload your proof of payment." : "Please tick the confirmation box.");
+      return;
+    }
     B.details.refno = $("[name=refno]", form).value.trim();
     B.details.amount = $("[name=amount]", form).value.trim();
     B.ref = "SLR-" + Date.now().toString(36).toUpperCase().slice(-6);
@@ -818,7 +870,7 @@
     if (t.closest("[data-next]")) {
       if (B.step === 2) {
         const form = $("#details-form");
-        if (!validate(form)) { toast("Please complete the required fields."); return; }
+        if (!validate(form)) { const e1 = $(".field.error, [required]:not(:checked)", form); if (e1) e1.scrollIntoView({ behavior: "smooth", block: "center" }); toast("Please complete the required fields."); return; }
         const fd = new FormData(form);
         B.details = { ...B.details, ...Object.fromEntries(fd.entries()), inperson: !!fd.get("inperson") };
       }
