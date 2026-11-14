@@ -26,7 +26,10 @@
 window.SOULORA_CONFIG = {
   brand: "Soulora",
   tagline: "Where the soul finds its light.",
-  email: "hello@soulora.ph",           // <- replace with your real email
+  /* Where bookings, payment questions, contact messages and feedback go.
+     (Booking notifications themselves are sent by your form provider:
+      set this same email in the form's notification settings.) */
+  email: "subscribechrisb@gmail.com",
   phone: "+63 917 000 0000",            // <- replace
   location: "Metro Manila, Philippines",// <- replace
   facebook: "https://facebook.com/",    // <- replace with your page
@@ -34,14 +37,14 @@ window.SOULORA_CONFIG = {
   timezoneLabel: "Philippine Time (PHT)",
   verifyHours: 24,                      // how soon you confirm payments
 
-  /* OPTIONAL: where booking / contact / feedback forms are sent.
-     Leave "" while testing: submissions are kept in the visitor's browser.
-     Later you can paste a Formspree, Getform, Make.com or your own API URL. */
-  endpoints: {
-    booking: "",
-    contact: "",
-    feedback: ""
-  }
+  /* Booking form used for ALL services (Reiki, Healer Consultations, Tarot, Quantum).
+     Clients fill this in and upload their proof of payment after paying. */
+  bookingFormUrl: "https://link.eurekatechph.com/widget/form/NuqkwcwNwCqqJCUiUBpK",
+
+  /* Sign-up form for healers & tarot readers who want to join the platform.
+     Paste the form link between the quotes. While empty, the Join page
+     asks applicants to email you instead. */
+  joinFormUrl: ""
 };
 
 /* Weekly hour templates (re-used below to keep things tidy) */
